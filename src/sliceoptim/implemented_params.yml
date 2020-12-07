@@ -1,0 +1,95 @@
+# Slic3r parameters implemented in sliceoptim
+
+# Filament options:
+
+extrusion-multiplier:
+  type: float
+  range: [0, 10]
+  description: "Change this to alter the amount of plastic extruded (default: 1)"
+temperature:
+  type: int
+  range: [0, 500]
+  description: "Extrusion temperature in degree Celsius, set 0 to disable (default: 200)"
+first-layer-temperature:
+  type: int
+  range: [0, 500]
+  description: "Extrusion temperature for the first layer, in degree Celsius"
+bed-temperature:
+  type: int
+  range: [0, 500]
+  description: "Heated bed temperature in degree Celsius, set 0 to disable (default: 0)"
+first-layer-bed-temperature:
+  type: int
+  range: [0, 500]
+  description: "Heated bed temperature for the first layer, in degree Celsius"
+# Speed options:
+perimeter-speed:
+  type: int
+  range: [0, 500]
+  description: "Speed of print moves for perimeters in mm/s (default: 60)"
+infill-speed:
+  type: int
+  range: [0, 5000]
+  description: "Speed of print moves in mm/s (default: 80)"
+solid-infill-speed:
+  type: int
+  range: [0, 5000]
+  description: "Speed of print moves for solid surfaces in mm/s or % over infill speed"
+first-layer-speed:
+  type: int
+  range: [0, 5000]
+  description: "Speed of print moves for bottom layer, expressed either as an absolute value or as a percentage over normal speeds (default: 30)"
+# Accuracy options:
+layer-height:
+  type: float
+  range: [0, 5]
+  description: "Layer height in mm (default: 0.3)"
+first-layer-height:
+  type: float
+  range: [0, 5]
+  description: "Layer height for first layer (mm or %, default: 0.35)"
+
+extrusion-width:
+  type: float
+  range: [0, 5]
+  description: "Set extrusion width manually; it accepts either an absolute value in mm (like 0.65) or a percentage over layer height (like 200%)"
+first-layer-extrusion-width:
+  type: float
+  range: [0, 5]
+  description: Set a different extrusion width for first layer
+perimeter-extrusion-width:
+  type: float
+  range: [0, 5]
+  description: "Set a different extrusion width for perimeters"
+external-perimeter-extrusion-width:
+  type: float
+  range: [0, 5]
+  description: "Set a different extrusion width for external perimeters"
+infill-extrusion-width:
+  type: float
+  range: [0, 5]
+  description: "Set a different extrusion width for infill"
+solid-infill-extrusion-width:
+  type: float
+  range: [0, 5]
+  description: "Set a different extrusion width for solid infill"
+top-infill-extrusion-width:
+  type: float
+  range: [0, 5]
+  description: "Set a different extrusion width for top infill"
+support-material-extrusion-width:
+  type: float
+  range: [0, 5]
+  description: "Set a different extrusion width for support material"
+infill-overlap:
+  type: float
+  range: [0, 100]
+  description: "Overlap between infill and perimeters (default: 55%)"
+bridge-flow-ratio:
+  type: float
+  range: [0, 5]
+  description: "Multiplier for extrusion when bridging (> 0, default: 1)"
+z-offset:
+  type: float
+  range: [0, 5]
+  description: "Additional height in mm to add to vertical coordinates"

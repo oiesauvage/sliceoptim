@@ -1,0 +1,5 @@
+{
+  "src/sliceoptim/*.py": {
+    "test": "tests/test_{}.py"
+  }
+}

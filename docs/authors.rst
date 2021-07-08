@@ -1,2 +1,4 @@
 .. _authors:
-.. include:: ../AUTHORS.rst
+
+
+.. mdinclude:: ../AUTHORS.md

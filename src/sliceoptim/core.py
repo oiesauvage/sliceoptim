@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""Core module of sliceoptim
+Contains main classes for definition of filaments, printers and experiments.
+"""
+
+__author__ = "Nils Artiges"
+__copyright__ = "Nils Artiges"
+__license__ = "apache 2.0"
+
 from pandas.core.frame import DataFrame
 import skopt
 import pandas as pd
@@ -14,10 +22,6 @@ import pathlib
 from sliceoptim import __version__
 
 
-__author__ = "Nils Artiges"
-__copyright__ = "Nils Artiges"
-__license__ = "mit"
-
 log = logging.getLogger("sliceoptim" + __name__)
 
 
@@ -26,7 +30,12 @@ class ExperimentError(Exception):
 
 
 class ParametersSpace(skopt.Space):
+    """Class for parametric space expored by Experiment.
+    """
+
     def __init__(self) -> None:
+        """Creates a new ParametersSpace.
+        """
         super().__init__([])
         self.__params_spec_file = (
             pathlib.Path(__file__).parent.absolute() / "implemented_params.yml"
@@ -37,6 +46,17 @@ class ParametersSpace(skopt.Space):
         return
 
     def add_param(self, name: str, low: float, high: float):
+        """Adds a new parameter.
+
+        Args:
+            name (str): Parameter name.
+            low (float): Lower bound for parameter values.
+            high (float): Upper bound for parameter values.
+
+        Raises:
+            KeyError: Error if parameter not supported.
+            ValueError: Error if inverted bounds.
+        """
         if name not in self.params_spec.keys():
             raise KeyError(
                 "The parameter {} doesn't exist or is not yet implemented.".format(name)
@@ -52,6 +72,14 @@ class ParametersSpace(skopt.Space):
         pass
 
     def delete_param(self, name: str):
+        """Delete a parameter.
+
+        Args:
+            name (str): Parameter name.
+
+        Raises:
+            KeyError: Error if parameter not existing.
+        """
         if name not in self.dimension_names:
             raise KeyError(
                 "The parameter {} is not in current parameters space.".format(name)
@@ -61,6 +89,9 @@ class ParametersSpace(skopt.Space):
 
 
 class Printer:
+    """Printer class to handle printer parameters.
+    """
+
     def __init__(
         self,
         name: str,
@@ -88,6 +119,9 @@ class Printer:
 
 
 class Filament:
+    """Filament class to handle filament parameters.
+    """
+
     def __init__(
         self,
         name: str,
@@ -115,6 +149,9 @@ class Filament:
 
 
 class Experiment:
+    """Class to handle experiments on slicing parameters, generate test batches and compute optimal results.
+    """
+
     def __init__(
         self,
         name: str,
@@ -526,6 +563,14 @@ class Experiment:
     def __clip_designs_df_to_parameters_space(
         self, designs_df: pd.DataFrame
     ) -> pd.DataFrame:
+        """clip designs dataframe values to parameters space bounds.
+
+        Args:
+            designs_df (pd.DataFrame): designs dataframe
+
+        Returns:
+            pd.DataFrame: clipped designs dataframe
+        """
         for p in self.params_space:
             low_bound = p.low
             high_bound = p.high

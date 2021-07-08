@@ -13,7 +13,7 @@ __author__ = "Nils Artiges"
 __copyright__ = "Nils Artiges"
 __license__ = "mit"
 
-test_stl = "./assets/calicat.stl"
+test_stl = "./assets/calicat_small.stl"
 
 
 @pytest.fixture()

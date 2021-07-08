@@ -1,2 +1,4 @@
 .. _changes:
-.. include:: ../CHANGELOG.rst
+
+
+.. mdinclude:: ../CHANGELOG.md

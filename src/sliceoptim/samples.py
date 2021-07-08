@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""sliceoptim module for interaction with Slic3r software and generation of samples batches.
+"""
+
+__author__ = "Nils Artiges"
+__copyright__ = "Nils Artiges"
+__license__ = "apache 2.0"
 
 import logging
 from configparser import ConfigParser
@@ -18,14 +24,13 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from sliceoptim.core import Printer, Filament
 
-__author__ = "Nils Artiges"
-__copyright__ = "Nils Artiges"
-__license__ = "mit"
-
 log = logging.getLogger("sliceoptim" + __name__)
 
 
 class Sample:
+    """Class to define samples to test slicing on. Connects with Slic3r software with cli.
+    """
+
     def __init__(
         self,
         input_file: str,
@@ -298,21 +303,21 @@ class Sample:
 
         Returns:
             dict: Sample information from Slic3r parsing.
-                  Example of returned info:
-                  {'filename': 'calicat.stl',
-                    'size_x': 28.535534,
-                    'size_y': 28.5,
-                    'size_z': 35.0,
-                    'min_x': 0.464466,
-                    'min_y': 0.0,
-                    'min_z': 0.0,
-                    'max_x': 29.0,
-                    'max_y': 28.5,
-                    'max_z': 35.0,
-                    'number_of_facets': 876.0,
-                    'manifold': 'yes',
-                    'number_of_parts': 1.0,
-                    'volume': 12501.378906}
+                Example of returned info:
+                {'filename': 'calicat.stl',
+                'size_x': 28.535534,
+                'size_y': 28.5,
+                'size_z': 35.0,
+                'min_x': 0.464466,
+                'min_y': 0.0,
+                'min_z': 0.0,
+                'max_x': 29.0,
+                'max_y': 28.5,
+                'max_z': 35.0,
+                'number_of_facets': 876.0,
+                'manifold': 'yes',
+                'number_of_parts': 1.0,
+                'volume': 12501.378906}
         """
         infos = {}
         cmd = ["slic3r", self.input_file, "--info"]
@@ -407,6 +412,9 @@ class Sample:
 
 
 class SampleGrid:
+    """Class for generation of test sample batches.
+    """
+
     def __init__(
         self,
         sample_input_file: str,
@@ -576,7 +584,7 @@ class SampleGrid:
             s.quality = val[i]
         pass
 
-    # TODO : implerment cost list and interface with dataframe exports/imports
+    # TODO : implement cost list and interface with dataframe exports/imports
     @property
     def cost_list(self) -> list:
         """Returns quality of samples as a list.

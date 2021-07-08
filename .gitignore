@@ -11,11 +11,12 @@
 __pycache__/*
 .cache/*
 .*.swp
-*/.ipynb_checkpoints/*
 .DS_Store
-experiments/*
 *.ipynb
 *.db
+*.gcode
+.ipynb_checkpoints
+debug
 
 # Project files
 .ropeproject

@@ -13,8 +13,8 @@ __author__ = "Nils Artiges"
 __copyright__ = "Nils Artiges"
 __license__ = "mit"
 
-test_stl_first_layer = "./assets/first_layer_test.stl"
-test_stl = "./assets/calicat.stl"
+test_stl_first_layer = "./assets/first_layer.stl"
+test_stl = "./assets/calicat_small.stl"
 test_slic3r_config = "./assets/config_slic3r.ini"
 
 
@@ -90,19 +90,13 @@ class TestSample:
         s_not_first_layer.set_param(
             "output", gcode_tmp_dir / "test_no_first_layer.gcode"
         )
-        s_first_layer = sp.Sample(
-            test_stl_first_layer,
-            is_first_layer=True,
-            printer=printer,
-            filament=filament,
-        )
         assert s_first_layer.is_first_layer
         assert not s_not_first_layer.is_first_layer
         assert s_first_layer.get_param("top-solid-layers") == 0
         assert s_not_first_layer.get_param("top-solid-layers") == 2
         assert s_first_layer.get_param("filament-diameter") == 1.75
         # Test if first layer temperatures retrieved from config
-        assert s_not_first_layer.get_param("first-layer-bed-temperature") == 0
+        assert s_not_first_layer.get_param("first-layer-bed-temperature") == 65
         assert s_not_first_layer.get_param("first-layer-temperature") == 200
 
     def test_write_gcode(self, sample):
@@ -230,9 +224,9 @@ class TestSample:
     def test_print_time_accessor(self, sample: sp.Sample):
         sample.set_param("extrusion-width", 0.4)
         if sample.is_first_layer:
-            assert sample.print_time == pytest.approx(0.455, 0.01)
+            assert sample.print_time == pytest.approx(0.431, 0.1)
         else:
-            assert sample.print_time == pytest.approx(23.3, 0.01)
+            assert sample.print_time == pytest.approx(7.14, 0.1)
         with pytest.raises(AttributeError):
             sample.print_time = 100.0
 
@@ -287,40 +281,25 @@ class TestSampleGrid:
     def test_compute_grid_shape(self, sample_grid: sp.SampleGrid):
         shape = sample_grid.grid_shape()
         if sample_grid.is_first_layer:
-            assert shape["n_rows"] == 8
-            assert shape["n_cols"] == 8
-            assert shape["size_x"] == 8 * 20 + 7 * 1
-            assert shape["size_y"] == 8 * 20 + 7 * 1
+            assert shape["n_rows"] == 7
+            assert shape["n_cols"] == 7
+            assert shape["size_x"] == 7 * 25 + 6
+            assert shape["size_y"] == 7 * 25 + 6
         else:
-            assert shape["n_rows"] == 3
-            assert shape["n_cols"] == 3
-            assert shape["size_x"] == pytest.approx(145.6, 0.01)
-            assert shape["size_y"] == pytest.approx(145.6, 0.01)
+            assert shape["n_rows"] == 4
+            assert shape["n_cols"] == 4
+            assert shape["size_x"] == pytest.approx(147, 0.1)
+            assert shape["size_y"] == pytest.approx(147, 0.1)
 
     def test_compute_first_sample_coords(self, sample_grid: sp.SampleGrid):
         grid_shape = sample_grid.grid_shape()
         coords = sample_grid.compute_first_sample_coords(grid_shape)
         if sample_grid.is_first_layer:
-            assert coords["x"] == pytest.approx(36.5, 0.01)
-            assert coords["y"] == pytest.approx(220 - 36.5, 0.01)
+            assert coords["x"] == pytest.approx(32, 0.1)
+            assert coords["y"] == pytest.approx(220 - 32, 0.1)
         else:
-            assert coords["x"] == pytest.approx(51.4, 0.01)
-            assert coords["y"] == pytest.approx(220 - 51.4, 0.01)
-
-    def test_gen_sample_coordinates_one_layer_case(self, sample_grid: sp.SampleGrid):
-        df = sample_grid.gen_sample_coordinates()
-        if sample_grid.is_first_layer:
-            assert len(df) == 48
-            assert df.iloc[0]["x"] == pytest.approx(36.5)
-            assert df.iloc[0]["y"] == pytest.approx(220 - 36.5)
-            assert df.iloc[-1]["x"] == pytest.approx(183.5)
-            assert df.iloc[-1]["y"] == pytest.approx(78.5)
-        else:
-            assert len(df) == 3
-            assert df.iloc[0]["x"] == pytest.approx(51.46, rel=0.1)
-            assert df.iloc[0]["y"] == pytest.approx(168.5, rel=0.1)
-            assert df.iloc[-1]["x"] == pytest.approx(168.5, rel=0.1)
-            assert df.iloc[-1]["y"] == pytest.approx(51.46, rel=0.1)
+            assert coords["x"] == pytest.approx(43.6, 0.1)
+            assert coords["y"] == pytest.approx(220 - 43.6, 0.1)
 
     def test_write_gcode(self, sample_grid):
         output_file = str(sample_grid.output_path)
@@ -346,9 +325,9 @@ class TestSampleGrid:
     def test_get_max_samples(self, sample_grid: sp.SampleGrid):
         shape = sample_grid.grid_shape()
         if sample_grid.is_first_layer:
-            assert shape["max_samples_count"] == 8 * 8
+            assert shape["max_samples_count"] == 7 * 7
         else:
-            assert shape["max_samples_count"] == 3
+            assert shape["max_samples_count"] == 4
 
     def test_limit_samples_number(self, sample_grid: sp.SampleGrid):
         designs = sample_grid.designs

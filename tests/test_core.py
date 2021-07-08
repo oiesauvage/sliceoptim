@@ -20,8 +20,8 @@ __author__ = "Nils Artiges"
 __copyright__ = "Nils Artiges"
 __license__ = "mit"
 
-test_stl_first_layer = "./assets/first_layer_test.stl"
-test_stl = "./assets/calicat.stl"
+test_stl_first_layer = "./assets/first_layer.stl"
+test_stl = "./assets/calicat_small.stl"
 
 # fixtures
 @pytest.fixture

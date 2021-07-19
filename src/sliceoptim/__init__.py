@@ -2,6 +2,7 @@
 __author__ = "Nils Artiges"
 __copyright__ = "Nils Artiges"
 __license__ = "apache 2.0"
+__version__ = "0.1.1"
 
 from pkg_resources import get_distribution, DistributionNotFound
 

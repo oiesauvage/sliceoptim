@@ -211,7 +211,7 @@ class TestExperiment:
         assert isinstance(experiment.sample_grid_list[1], SampleGrid)
         assert len(experiment.sample_grid_list[1].designs) == 2
         with pytest.raises(ValueError):
-            experiment.create_new_sample_grid(5)
+            experiment.create_new_sample_grid(experiment.max_samples_count + 1)
 
     def test_write_gcode_last_sample_grid(self, experiment: core.Experiment):
         experiment.create_new_sample_grid(3)

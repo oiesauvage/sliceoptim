@@ -14,10 +14,18 @@ A GUI for `sliceoptim` is available as an Octoprint plugin.
 
 ## Installation
 
-To use `sliceoptim`, you must have `libslic3r` installed, as well as `Python 3.8+`. This library is not tested yet on Windows or Mac (only Linux), contributions are welcome. If you all these requirement, you can install the last stable release with pip:
+To use `sliceoptim`, you must have `libslic3r` installed, as well as `Python 3.8+`. This library is not tested yet on Windows or Mac (only Linux), contributions are welcome. If you all these requirement, you can install the last commit with pip:
 
 ```bash
-pip install sliceoptim
+pip install git+https://github.com/oiesauvage/sliceoptim.git
+```
+
+for development purpose install `conda`, fork and clone this repository and run:
+
+```bash
+conda env create -f environment.yml
+conda activate sliceoptim
+python setup.py develop
 ```
 
 ## How to use

@@ -1,0 +1,14 @@
+name: sliceoptim
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  - scikit-optimize=0.8.1
+  - pytest=6.2.*
+  - pytest-cov
+  - pandas
+  - numpy
+  - tinydb
+  - sphinx=4.1.*
+  - sphinx_rtd_theme=0.5.*
+  - m2r2

@@ -7,7 +7,6 @@ __copyright__ = "Nils Artiges"
 __license__ = "apache 2.0"
 
 import logging
-from configparser import ConfigParser
 from pathlib import Path
 from subprocess import CalledProcessError, run
 import pandas as pd

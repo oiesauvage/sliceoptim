@@ -30,12 +30,10 @@ class ExperimentError(Exception):
 
 
 class ParametersSpace(skopt.Space):
-    """Class for parametric space expored by Experiment.
-    """
+    """Class for parametric space expored by Experiment."""
 
     def __init__(self) -> None:
-        """Creates a new ParametersSpace.
-        """
+        """Creates a new ParametersSpace."""
         super().__init__([])
         self.__params_spec_file = (
             pathlib.Path(__file__).parent.absolute() / "implemented_params.yml"
@@ -89,8 +87,7 @@ class ParametersSpace(skopt.Space):
 
 
 class Printer:
-    """Printer class to handle printer parameters.
-    """
+    """Printer class to handle printer parameters."""
 
     def __init__(
         self,
@@ -119,8 +116,7 @@ class Printer:
 
 
 class Filament:
-    """Filament class to handle filament parameters.
-    """
+    """Filament class to handle filament parameters."""
 
     def __init__(
         self,
@@ -149,8 +145,7 @@ class Filament:
 
 
 class Experiment:
-    """Class to handle experiments on slicing parameters, generate test batches and compute optimal results.
-    """
+    """Class to handle experiments on slicing parameters, generate test batches and compute optimal results."""
 
     def __init__(
         self,
@@ -541,9 +536,9 @@ class Experiment:
 
         Args:
             designs (DataFrame): design DataFrame with parameters as column names.
-        
+
         Returns:
-            skopt.Space: space of parameters    
+            skopt.Space: space of parameters
         """
         params = []
         if self.is_first_layer:

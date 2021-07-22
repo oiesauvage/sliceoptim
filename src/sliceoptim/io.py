@@ -6,7 +6,7 @@ __author__ = "Nils Artiges"
 __copyright__ = "Nils Artiges"
 __license__ = "apache 2.0"
 
-from sliceoptim import core, samples
+from sliceoptim import core
 from tinydb import TinyDB, where
 from pathlib import Path
 import pickle

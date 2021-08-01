@@ -1,6 +1,7 @@
 # sliceoptim
 
-`sliceoptim` is a Python package providing tools to optimize slicer settings for FDM 3D printers.
+`sliceoptim` is a Python package providing tools to optimize slicer settings for FDM 3D printers.  
+Documentation is available [HERE](https://oiesauvage.github.io/sliceoptim/index.html).
 
 ## Description
 

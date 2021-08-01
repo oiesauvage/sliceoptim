@@ -1,34 +1,58 @@
-name: Python Package using Conda
+name: Test and deploy documentation
 
 on: [push]
 
 jobs:
-  build-linux:
+  test-and-deploy-doc:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    - name: Install dependencies
-      run: |
-        conda env update --file environment.yml --name base
-    - name: Lint with flake8
-      run: |
-        conda install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        conda install pytest
-        pytest
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Add conda to system path
+        run: |
+          # $CONDA is an environment variable pointing to the root of the miniconda directory
+          echo $CONDA/bin >> $GITHUB_PATH
+      - name: Install dependencies
+        run: |
+          sudo apt install slic3r
+          conda env update --file environment.yml --name base
+          python setup.py install
+      - name: Lint with flake8
+        run: |
+          conda install -c conda-forge flake8
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with pytest
+        run: |
+          pytest
+
+      - name: Sphinx build
+        # Build HTML documentation from sources under `docs` to `build` folder.
+        run: make -C docs html
+
+      - name: Commit documentation in gh-pages branch
+        # Store documentation in a temporary one-commit git repo.
+        run: |
+          cd build/sphinx/html
+          git init -b gh-pages
+          touch .nojekyll
+          git config --local user.name "GitHub Actions Bot"
+          git config --local user.email "actions@github.com"
+          git add .
+          git commit -m "Update documentation"
+
+      - name: Push gh-pages branch
+        # Push from the temporary repo to the `gh-pages` branch of your repo.
+        # Warning: this will overwrite any existing content and history
+        # of the `gh-pages` branch.
+        run: |
+          cd build/sphinx/html
+          git push --force "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

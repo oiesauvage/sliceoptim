@@ -16,7 +16,7 @@ from copy import copy
 import numpy as np
 import yaml
 import logging
-import pathlib
+from pathlib import Path
 
 
 from sliceoptim import __version__
@@ -36,7 +36,7 @@ class ParametersSpace(skopt.Space):
         """Creates a new ParametersSpace."""
         super().__init__([])
         self.__params_spec_file = (
-            pathlib.Path(__file__).parent.absolute() / "implemented_params.yml"
+            Path(__file__).parent / "data" / "implemented_params.yml"
         )
         with open(self.__params_spec_file, "r") as file:
             params_spec = yaml.safe_load(file)

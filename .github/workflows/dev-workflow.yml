@@ -3,8 +3,12 @@ name: Development
 on:
   push:
     branches: [master]
+    tags-ignore:
+      - "v*.*.*"
   pull_request:
     branches: [master]
+    tags-ignore:
+      - "v*.*.*"
 
 jobs:
   test:
@@ -22,5 +26,4 @@ jobs:
                slic3r \
                tox
       - name: Test with pytest
-        run: |
-          tox
+        run: tox

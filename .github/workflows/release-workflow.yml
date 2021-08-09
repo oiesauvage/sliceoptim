@@ -1,10 +1,7 @@
 name: Release
 
 on:
-  workflow_run:
-    workflows: [Dev workflow]
-    types: [completed]
-    branches: [master]
+  push:
     tags:
       - "v*.*.*"
 
@@ -21,13 +18,17 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+               slic3r \
                tox
+      - name: Test with pytest
+        run: tox
       - name: Package build
         run: tox -e build
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          files: dist/*
+          artifacts: "dist/*"
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Sphinx build
         # Build HTML documentation from sources under `docs` to `build` folder.
         run: tox -e docs

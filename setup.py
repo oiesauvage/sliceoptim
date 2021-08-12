@@ -12,7 +12,6 @@ if __name__ == "__main__":
     try:
         setup(
             use_scm_version={"version_scheme": "no-guess-dev"},
-            setup_requires=["setuptools_scm"],
         )
     except:  # noqa
         print(

@@ -2,7 +2,7 @@ name: sliceoptim
 channels:
   - conda-forge
 dependencies:
-  - python>=3.8
+  - python=3.7
   - scikit-optimize>=0.8
   - pytest>=6.2
   - pytest-cov>=2.12

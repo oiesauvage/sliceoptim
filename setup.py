@@ -7,12 +7,29 @@
     Learn more under: https://pyscaffold.org/
 """
 from setuptools import setup
+from platform import machine
 
 if __name__ == "__main__":
     try:
-        setup(
-            use_scm_version={"version_scheme": "no-guess-dev"},
-        )
+        if not machine() in ["armv7l", "armv6l"]:
+            print("\n\nNo ARM platform detected.\n\n")
+            setup(
+                use_scm_version={"version_scheme": "no-guess-dev"},
+            )
+        else:
+            print(
+                "\n\nARM platform detected! Using pywheels for compiled dependencies.\n\n"
+            )
+            setup(
+                use_scm_version={"version_scheme": "no-guess-dev"},
+                dependency_links=[
+                    "https://www.piwheels.org/simple/pandas",
+                    "https://www.piwheels.org/simple/numpy",
+                    "https://www.piwheels.org/simple/scipy",
+                    "https://www.piwheels.org/simple/scikit-learn",
+                    "https://www.piwheels.org/simple/scikit-optimize",
+                ],
+            )
     except:  # noqa
         print(
             "\n\nAn error occurred while building the project, "

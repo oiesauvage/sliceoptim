@@ -1,0 +1,807 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>sliceoptim.core &mdash; sliceoptim 0.1.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> sliceoptim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">Readme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">sliceoptim</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>sliceoptim.core</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sliceoptim.core</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Core module of sliceoptim</span>
+<span class="sd">Contains main classes for definition of filaments, printers and experiments.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Nils Artiges&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Nils Artiges&quot;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;apache 2.0&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pandas.core.frame</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">import</span> <span class="nn">skopt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sliceoptim.samples</span> <span class="kn">import</span> <span class="n">Sample</span><span class="p">,</span> <span class="n">SampleGrid</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+
+<span class="kn">from</span> <span class="nn">sliceoptim</span> <span class="kn">import</span> <span class="n">__version__</span>
+
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;sliceoptim&quot;</span> <span class="o">+</span> <span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ExperimentError"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.ExperimentError">[docs]</a><span class="k">class</span> <span class="nc">ExperimentError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="ParametersSpace"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.ParametersSpace">[docs]</a><span class="k">class</span> <span class="nc">ParametersSpace</span><span class="p">(</span><span class="n">skopt</span><span class="o">.</span><span class="n">Space</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class for parametric space expored by Experiment.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new ParametersSpace.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__params_spec_file</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;implemented_params.yml&quot;</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__params_spec_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">params_spec</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params_spec</span> <span class="o">=</span> <span class="n">params_spec</span>
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="ParametersSpace.add_param"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.ParametersSpace.add_param">[docs]</a>    <span class="k">def</span> <span class="nf">add_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">low</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">high</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds a new parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Parameter name.</span>
+<span class="sd">            low (float): Lower bound for parameter values.</span>
+<span class="sd">            high (float): Upper bound for parameter values.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: Error if parameter not supported.</span>
+<span class="sd">            ValueError: Error if inverted bounds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_spec</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="s2">&quot;The parameter </span><span class="si">{}</span><span class="s2"> doesn&#39;t exist or is not yet implemented.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">low</span> <span class="o">&gt;=</span> <span class="n">high</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;low anf high bounds are inverted or equal.&quot;</span><span class="p">)</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_spec</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;float&quot;</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">skopt</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">Real</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">param</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">skopt</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">low</span><span class="p">),</span> <span class="n">high</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">high</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ParametersSpace.delete_param"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.ParametersSpace.delete_param">[docs]</a>    <span class="k">def</span> <span class="nf">delete_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete a parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Parameter name.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: Error if parameter not existing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension_names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="s2">&quot;The parameter </span><span class="si">{}</span><span class="s2"> is not in current parameters space.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimension_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="Printer"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Printer">[docs]</a><span class="k">class</span> <span class="nc">Printer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Printer class to handle printer parameters.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">bed_size</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">nozzle_diameter</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">max_speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">min_speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new Printer object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Printer name</span>
+<span class="sd">            bed_size (List(float)): [X size of bed, Y size of bed]</span>
+<span class="sd">            nozzle_diameter (float): Nozzle diameter in mm.</span>
+<span class="sd">            max_speed (float): maximum moves speed in mm/s.</span>
+<span class="sd">            min_speed (float): minimum moves speed in mm/s.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bed_size</span> <span class="o">=</span> <span class="n">bed_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_speed</span> <span class="o">=</span> <span class="n">max_speed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_speed</span> <span class="o">=</span> <span class="n">min_speed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nozzle_diameter</span> <span class="o">=</span> <span class="n">nozzle_diameter</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Created new Printer: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Filament"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Filament">[docs]</a><span class="k">class</span> <span class="nc">Filament</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Filament class to handle filament parameters.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">material</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">extrusion_temp_range</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">bed_temp_range</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">diameter</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new Filament object</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Name of the Filament.</span>
+<span class="sd">            kind (str): Filament kind (PLA, PET-G, ABS, TPU...)</span>
+<span class="sd">            extrusion_temp_range (List[float]): Temperature range in Celsius.</span>
+<span class="sd">            bed_temp_range (List[float]): Bed temperature range in Celsius.</span>
+<span class="sd">            diameter (float): Filament diameter in mm.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">material</span> <span class="o">=</span> <span class="n">material</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extrusion_temp_range</span> <span class="o">=</span> <span class="n">extrusion_temp_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bed_temp_range</span> <span class="o">=</span> <span class="n">bed_temp_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diameter</span> <span class="o">=</span> <span class="n">diameter</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Created new Filament: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Experiment"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment">[docs]</a><span class="k">class</span> <span class="nc">Experiment</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Class to handle experiments on slicing parameters, generate test batches and compute optimal results.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">sample_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">is_first_layer</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">spacing</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">printer</span><span class="p">:</span> <span class="n">Printer</span><span class="p">,</span>
+        <span class="n">filament</span><span class="p">:</span> <span class="n">Filament</span><span class="p">,</span>
+        <span class="n">params_space</span><span class="p">:</span> <span class="n">ParametersSpace</span><span class="p">,</span>
+        <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">sample_default_params</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">config_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new Experiment instance to handle successive tests.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Name of the new experiment.</span>
+<span class="sd">            sample_file (str): stl sample file used as a basis for generated test samples.</span>
+<span class="sd">            is_first_layer (bool): Selects if the experiment is for a first-layer case.</span>
+<span class="sd">            spacing (float): Absolute spacing between test samples (in mm).</span>
+<span class="sd">            printer (Printer): Printer instance providing printer&#39;s caracteristics.</span>
+<span class="sd">            filament (Filament): Filament instance providing filament&#39;s carateristics.</span>
+<span class="sd">            params_space (skopt.Space): skopt.Space instance describing the parametric space to optimize.</span>
+<span class="sd">            output_file (str): Path for generated gcode files.</span>
+<span class="sd">            config_file (str, pathlike): file path for a Slic3r .ini config file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params_space</span> <span class="o">=</span> <span class="n">params_space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_first_layer</span> <span class="o">=</span> <span class="n">is_first_layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_file</span> <span class="o">=</span> <span class="n">sample_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span> <span class="o">=</span> <span class="n">config_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printer</span> <span class="o">=</span> <span class="n">printer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filament</span> <span class="o">=</span> <span class="n">filament</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dummy_sample_grid</span> <span class="o">=</span> <span class="n">SampleGrid</span><span class="p">(</span>
+            <span class="n">sample_input_file</span><span class="o">=</span><span class="n">sample_file</span><span class="p">,</span>
+            <span class="n">designs</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span>
+            <span class="n">is_first_layer</span><span class="o">=</span><span class="n">is_first_layer</span><span class="p">,</span>
+            <span class="n">printer</span><span class="o">=</span><span class="n">printer</span><span class="p">,</span>
+            <span class="n">filament</span><span class="o">=</span><span class="n">filament</span><span class="p">,</span>
+            <span class="n">spacing</span><span class="o">=</span><span class="n">spacing</span><span class="p">,</span>
+            <span class="n">output_path</span><span class="o">=</span><span class="n">output_file</span><span class="p">,</span>
+            <span class="n">sample_default_params</span><span class="o">=</span><span class="n">sample_default_params</span><span class="p">,</span>
+            <span class="n">config_file</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_samples_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dummy_sample_grid</span><span class="o">.</span><span class="n">grid_shape</span><span class="p">()[</span>
+            <span class="s2">&quot;max_samples_count&quot;</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spacing</span> <span class="o">=</span> <span class="n">spacing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Created new Experiment: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">init_gcode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dummy_sample_grid</span><span class="o">.</span><span class="n">init_gcode</span>
+
+    <span class="nd">@init_gcode</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">init_gcode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dummy_sample_grid</span><span class="o">.</span><span class="n">init_gcode</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">end_gcode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dummy_sample_grid</span><span class="o">.</span><span class="n">end_gcode</span>
+
+    <span class="nd">@end_gcode</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">end_gcode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dummy_sample_grid</span><span class="o">.</span><span class="n">end_gcode</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Experiment.create_new_sample_grid"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.create_new_sample_grid">[docs]</a>    <span class="k">def</span> <span class="nf">create_new_sample_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SampleGrid</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new sample grid (test samples to print)</span>
+<span class="sd">           given a required number of samples (not greater than</span>
+<span class="sd">           the maximum bed capacity).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_samples (int): number of samples for the new samples grid.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: The number of samples can&#39;t be above a limit (computed from 3d printer bed space).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SampleGrid: The new generated sample grid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_samples_count</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;length of &#39;designs&#39; pd.DataFrame can not be greater &quot;</span>
+                <span class="s2">&quot;than maximum number of samples on heat bed (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">max_samples_count</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">sample_grid</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__dummy_sample_grid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">:</span>
+            <span class="c1"># first sample grid case</span>
+            <span class="c1"># init optimizer and create first designs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">skopt</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">params_space</span><span class="p">,</span>
+                <span class="s2">&quot;GP&quot;</span><span class="p">,</span>
+                <span class="n">acq_func</span><span class="o">=</span><span class="s2">&quot;gp_hedge&quot;</span><span class="p">,</span>
+                <span class="n">acq_optimizer</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+                <span class="n">initial_point_generator</span><span class="o">=</span><span class="s2">&quot;lhs&quot;</span><span class="p">,</span>
+                <span class="n">n_initial_points</span><span class="o">=</span><span class="n">n_samples</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">designs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_designs</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="n">sample_grid</span><span class="o">.</span><span class="n">designs</span> <span class="o">=</span> <span class="n">designs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample_grid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sample_grid</span></div>
+
+<div class="viewcode-block" id="Experiment.generate_designs"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.generate_designs">[docs]</a>    <span class="k">def</span> <span class="nf">generate_designs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate a DataFrame of new design parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_samples (int): Number of designs to generate.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ExperimentError: Can&#39;t generate more designs than the printer&#39;s bed can hold.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: DataFrame of designs parameters&#39; values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ExperimentError</span><span class="p">(</span>
+                <span class="s2">&quot;Can&#39;t generate new designs if an optimizer is not present! &quot;</span>
+                <span class="s2">&quot;Create a new sample grid to generate it automatically.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">ask</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="n">designs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_space</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_first_layer</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;first-layer-temperature&quot;</span> <span class="ow">in</span> <span class="n">designs</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">designs</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">designs</span><span class="p">[</span><span class="s2">&quot;first-layer-temperature&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;first-layer-bed-temperature&quot;</span> <span class="ow">in</span> <span class="n">designs</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">designs</span><span class="p">[</span><span class="s2">&quot;bed-temperature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">designs</span><span class="p">[</span><span class="s2">&quot;first-layer-bed-temperature&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;first-layer-bed-temperature&quot;</span> <span class="ow">in</span> <span class="n">designs</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">designs</span> <span class="o">=</span> <span class="n">designs</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;first-layer-bed-temperature&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span>
+                <span class="n">designs</span><span class="o">.</span><span class="n">index</span>
+            <span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;New designs generated!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">designs</span></div>
+
+<div class="viewcode-block" id="Experiment.write_gcode_for_last_sample_grid"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.write_gcode_for_last_sample_grid">[docs]</a>    <span class="k">def</span> <span class="nf">write_gcode_for_last_sample_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write to output file the gcode for the last test sample grid.&quot;&quot;&quot;</span>
+        <span class="n">last_sample_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">last_sample_grid</span><span class="o">.</span><span class="n">write_gcode</span><span class="p">()</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Experiment.get_samples_list"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.get_samples_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Sample</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Return all test samples generated so far as a list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Sample]: list of generated test samples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">sg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sg</span><span class="o">.</span><span class="n">samples_list</span><span class="p">:</span>
+                <span class="n">samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">samples</span></div>
+
+<div class="viewcode-block" id="Experiment.get_samples_results_df"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.get_samples_results_df">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples_results_df</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return a DataFrame of results for each generated test sample</span>
+<span class="sd">           (print time, quality, and &quot;cost&quot; computed by the objective function).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: DataFrame of all samples results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_samples_list</span><span class="p">()</span>
+        <span class="n">print_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">print_time</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+        <span class="n">qualities</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">quality</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+        <span class="n">costs</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">cost</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;print_time&quot;</span><span class="p">:</span> <span class="n">print_times</span><span class="p">,</span> <span class="s2">&quot;quality&quot;</span><span class="p">:</span> <span class="n">qualities</span><span class="p">,</span> <span class="s2">&quot;cost&quot;</span><span class="p">:</span> <span class="n">costs</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="Experiment.compute_costs_from_results_df"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.compute_costs_from_results_df">[docs]</a>    <span class="k">def</span> <span class="nf">compute_costs_from_results_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Compute &quot;costs&quot; to be minimized by the optimizer.</span>
+<span class="sd">           Costs are computed to prioritize quality over speed</span>
+<span class="sd">           (ie, reduce speed only if print quality impact is limited).</span>
+<span class="sd">           Fist costs are computed using a linear interpolation technique,</span>
+<span class="sd">           and next ones using a spline interpolation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            results_df (pd.DataFrame): DataFrame containing all samples results.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: Input DataFrame populated with samples&#39; cost results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;qr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;quality&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;qr&quot;</span><span class="p">,</span> <span class="s2">&quot;print_time&quot;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cost&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="c1"># case of first results</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cost&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cost&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cost&quot;</span><span class="p">]</span>
+                <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;spline&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">limit_direction</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Optimization costs computed for last generated Samples.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="Experiment.compute_and_update_samples_costs"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.compute_and_update_samples_costs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_and_update_samples_costs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute samples&#39; cost from speed and quality results and update costs in samples objects.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ExperimentError: At least one grid of test samples must be generated.</span>
+<span class="sd">            ExperimentError: All samples must have a quality result registered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ExperimentError</span><span class="p">(</span>
+                <span class="s2">&quot;No sample grid registered.&quot;</span>
+                <span class="s2">&quot;Please create one first with create_new_sample_grid() method.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_samples_results_df</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;quality&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">ExperimentError</span><span class="p">(</span>
+                <span class="s2">&quot;Not all quality results of samples has been registered.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">cost</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_costs_from_results_df</span><span class="p">(</span><span class="n">df_res</span><span class="p">)[</span><span class="s2">&quot;cost&quot;</span><span class="p">]</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_samples_list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="n">cost</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Samples optimization costs updated.&quot;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Experiment.get_designs"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.get_designs">[docs]</a>    <span class="k">def</span> <span class="nf">get_designs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns generated test sample designs as a DataFrame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame: Generated test sample designs as a DataFrame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">designs</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">sg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">:</span>
+            <span class="n">designs</span> <span class="o">=</span> <span class="n">designs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sg</span><span class="o">.</span><span class="n">designs</span><span class="p">)</span>
+        <span class="n">designs</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">designs</span></div>
+
+<div class="viewcode-block" id="Experiment.register_costs_to_optimizer"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.register_costs_to_optimizer">[docs]</a>    <span class="k">def</span> <span class="nf">register_costs_to_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Register new computed samples costs to optimizer.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ExperimentError: All samples costs must be computed before registering them to the optimizer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_samples_list</span><span class="p">()</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">yi</span><span class="p">)</span> <span class="p">:]</span>
+        <span class="n">costs</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">cost</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">costs</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="n">ExperimentError</span><span class="p">(</span><span class="s2">&quot;All samples costs are not computed.&quot;</span><span class="p">)</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_space</span><span class="p">]</span>
+        <span class="n">designs</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_designs</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">yi</span><span class="p">)</span> <span class="p">:][</span><span class="n">param_names</span><span class="p">]</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">designs</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">tell</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">costs</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Samples optimization costs registered to optimizer.&quot;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Experiment.estim_best_config"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.estim_best_config">[docs]</a>    <span class="k">def</span> <span class="nf">estim_best_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Estimate best values for the set of optimized parameters, given actual test samples results.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ExperimentError: At least a full grid of sample results must be registered to predict</span>
+<span class="sd">                             the best configuration.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: Two elements tuple with a Dictionary of best parameters values and related uncertainty of</span>
+<span class="sd">                   minimum cost.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">yi</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">n_initial_points_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ExperimentError</span><span class="p">(</span>
+                <span class="s2">&quot;Not enough samples are registered (at least </span><span class="si">{}</span><span class="s2"> are required&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">n_initial_points_</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">best_config</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+        <span class="n">best_point</span> <span class="o">=</span> <span class="n">skopt</span><span class="o">.</span><span class="n">expected_minimum</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="mi">100</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params_space</span><span class="p">):</span>
+            <span class="n">best_config</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">best_point</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">fmin</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">best_point</span><span class="p">]),</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">costs</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">cost</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_samples_list</span><span class="p">()]</span>
+        <span class="n">uncertainty</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">std</span> <span class="o">/</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">costs</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">costs</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Best config for </span><span class="si">{}</span><span class="s2"> Experiment retrived.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">best_config</span><span class="p">,</span> <span class="n">uncertainty</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">fmin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Experiment.to_dataframe"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.to_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate a pandas dataframe from designs and results.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: dataframe descripting all designs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">designs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_designs</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">designs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ExperimentError</span><span class="p">(</span><span class="s2">&quot;Designs must be generated first to be exported.&quot;</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_samples_results_df</span><span class="p">()</span>
+        <span class="n">grid_ids_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">):</span>
+            <span class="n">grid_ids_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grid_ids_list</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">samples_list</span><span class="p">)))</span>
+        <span class="n">grid_ids</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">grid_ids_list</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sample_grid_id&quot;</span><span class="p">])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">designs</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">grid_ids</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="Experiment.from_dataframe"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.from_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">from_dataframe</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">samples_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">overwrite_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">clip_to_space</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">infer_space</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Import experiment dataframe into current Experiment object.</span>
+<span class="sd">           Existing samples can be overwritten.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            file_path (str): File path of csv file</span>
+<span class="sd">            overwrite_samples (True): overwrite existing samples with csv samples data.</span>
+<span class="sd">            clip_to_space (True): clip parameters values to space while importing.</span>
+<span class="sd">            infer_space (True): Try to infer the parametric space from designs (experimental).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">designs_df</span> <span class="o">=</span> <span class="n">samples_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;print_time&quot;</span><span class="p">,</span> <span class="s2">&quot;quality&quot;</span><span class="p">,</span> <span class="s2">&quot;cost&quot;</span><span class="p">,</span> <span class="s2">&quot;sample_grid_id&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">grid_ids</span> <span class="o">=</span> <span class="n">samples_df</span><span class="p">[</span><span class="s2">&quot;sample_grid_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">overwrite_samples</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">infer_space</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">params_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__infer_param_space_from_designs_df</span><span class="p">(</span><span class="n">designs_df</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clip_to_space</span><span class="p">:</span>
+            <span class="n">designs_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__clip_designs_df_to_parameters_space</span><span class="p">(</span><span class="n">designs_df</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">grid_ids</span><span class="p">:</span>
+            <span class="n">grid_designs_df</span> <span class="o">=</span> <span class="n">designs_df</span><span class="p">[</span><span class="n">samples_df</span><span class="p">[</span><span class="s2">&quot;sample_grid_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
+                <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">quality</span> <span class="o">=</span> <span class="n">samples_df</span><span class="p">[</span><span class="n">samples_df</span><span class="p">[</span><span class="s2">&quot;sample_grid_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">][</span>
+                <span class="s2">&quot;quality&quot;</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_new_sample_grid</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">grid_designs_df</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">designs</span> <span class="o">=</span> <span class="n">grid_designs_df</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">quality_list</span> <span class="o">=</span> <span class="n">quality</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Experiment.export_csv"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.export_csv">[docs]</a>    <span class="k">def</span> <span class="nf">export_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Export designs and current state of results to a csv file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            file_path (str): file_path</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Experiment.import_csv"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.import_csv">[docs]</a>    <span class="k">def</span> <span class="nf">import_csv</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">overwrite_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">clip_to_space</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">infer_space</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Import csv experiment data to current Experiment object.</span>
+<span class="sd">           Existing samples can be overwritten.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            file_path (str): File path of csv file</span>
+<span class="sd">            overwrite_samples (True): overwrite existing samples with csv samples data.</span>
+<span class="sd">            clip_to_space (True): clip parameters values to space while importing.</span>
+<span class="sd">            infer_space (True): Try to infer the parametric space from designs (experimental).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">samples_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_dataframe</span><span class="p">(</span>
+            <span class="n">samples_df</span><span class="o">=</span><span class="n">samples_df</span><span class="p">,</span>
+            <span class="n">overwrite_samples</span><span class="o">=</span><span class="n">overwrite_samples</span><span class="p">,</span>
+            <span class="n">clip_to_space</span><span class="o">=</span><span class="n">clip_to_space</span><span class="p">,</span>
+            <span class="n">infer_space</span><span class="o">=</span><span class="n">infer_space</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="nf">__infer_param_space_from_designs_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">designs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">skopt</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Infer parameters space from a given designs DataFrame</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            designs (DataFrame): design DataFrame with parameters as column names.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            skopt.Space: space of parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_first_layer</span><span class="p">:</span>
+            <span class="c1"># drop useless columns</span>
+            <span class="n">designs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[])</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">designs</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="c1"># infer data type and set param</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">designs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+            <span class="n">col_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;int&quot;</span> <span class="ow">in</span> <span class="n">col_type</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">skopt</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">high</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+            <span class="k">elif</span> <span class="s2">&quot;float&quot;</span> <span class="ow">in</span> <span class="n">col_type</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">skopt</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">Real</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">high</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">skopt</span><span class="o">.</span><span class="n">Space</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__clip_designs_df_to_parameters_space</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">designs_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;clip designs dataframe values to parameters space bounds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            designs_df (pd.DataFrame): designs dataframe</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: clipped designs dataframe</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_space</span><span class="p">:</span>
+            <span class="n">low_bound</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">low</span>
+            <span class="n">high_bound</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">high</span>
+            <span class="n">designs_df</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">designs_df</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+                <span class="n">lower</span><span class="o">=</span><span class="n">low_bound</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="n">high_bound</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">designs_df</span>
+
+<div class="viewcode-block" id="Experiment.write_validation_sample"><a class="viewcode-back" href="../../api/sliceoptim.html#sliceoptim.core.Experiment.write_validation_sample">[docs]</a>    <span class="k">def</span> <span class="nf">write_validation_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Write gcode for validation sample.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            params (dict): Sample parameters for validation sample.</span>
+<span class="sd">            output_file (str): Path for validation sample gcode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">Sample</span><span class="p">(</span>
+            <span class="n">is_first_layer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">is_first_layer</span><span class="p">,</span>
+            <span class="n">printer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">printer</span><span class="p">,</span>
+            <span class="n">filament</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filament</span><span class="p">,</span>
+            <span class="n">input_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_file</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sample</span><span class="o">.</span><span class="n">erase_start_end_gcode</span><span class="p">()</span>
+        <span class="n">init_gcode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">init_gcode</span>
+        <span class="n">end_gcode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_grid_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end_gcode</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">sample</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">gcode</span> <span class="o">=</span> <span class="n">init_gcode</span> <span class="o">+</span> <span class="n">sample</span><span class="o">.</span><span class="n">gcode</span> <span class="o">+</span> <span class="n">end_gcode</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">gcode</span><span class="p">)</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Nils Artiges.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

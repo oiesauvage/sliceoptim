@@ -1,0 +1,7 @@
+sliceoptim
+==========
+
+.. toctree::
+   :maxdepth: 4
+
+   sliceoptim

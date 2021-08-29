@@ -1,0 +1,37 @@
+sliceoptim package
+==================
+
+Submodules
+----------
+
+sliceoptim.core module
+----------------------
+
+.. automodule:: sliceoptim.core
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sliceoptim.io module
+--------------------
+
+.. automodule:: sliceoptim.io
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sliceoptim.samples module
+-------------------------
+
+.. automodule:: sliceoptim.samples
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: sliceoptim
+   :members:
+   :undoc-members:
+   :show-inheritance:
